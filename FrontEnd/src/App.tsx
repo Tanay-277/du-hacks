@@ -1,4 +1,5 @@
 import { Appbar, Filters, Store } from "./components/blocks";
+import Stripe from "./components/pages/Stripe";
 
 export default function Home() {
   return (
@@ -7,6 +8,7 @@ export default function Home() {
       <div className="w-full flex flex-row">
         <Filters />
         <Store />
+        <Stripe/>
       </div>
     </main>
   )
