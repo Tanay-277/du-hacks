@@ -1,187 +1,153 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { Trash2 } from "lucide-react";
+import { Select, SelectTrigger, SelectContent, SelectItem } from "../ui/select";
+import supabase from "@/utils/supaBaseClient";
 
 type FiltersState = {
-    category: {
-        medicines: boolean;
-        healthWellness: boolean;
-        personalCare: boolean;
-    };
-    price: {
-        under25: boolean;
-        _25to50: boolean;
-        _50to100: boolean;
-        over100: boolean;
-    };
-    rating: {
-        _5stars: boolean;
-        _4stars: boolean;
-        _3stars: boolean;
-        _2stars: boolean;
-    };
+    category: string[];
+    price: string[];
+    rating: string[];
 };
 
+const SORT_OPTIONS = [
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
+    { value: "rating_desc", label: "Rating: High to Low" },
+    { value: "rating_asc", label: "Rating: Low to High" },
+];
+
 export default function Filters() {
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [filters, setFilters] = useState<FiltersState>({
-        category: {
-            medicines: false,
-            healthWellness: false,
-            personalCare: false,
-        },
-        price: {
-            under25: false,
-            _25to50: false,
-            _50to100: false,
-            over100: false,
-        },
-        rating: {
-            _5stars: false,
-            _4stars: false,
-            _3stars: false,
-            _2stars: false,
-        },
+        category: searchParams.get("category")?.split(",") || [],
+        price: searchParams.get("price")?.split(",") || [],
+        rating: searchParams.get("rating")?.split(",") || [],
     });
+    const [categories, setCategories] = useState<string[]>([]);
+    const [sort, setSort] = useState<string>(searchParams.get("sort") || "price_asc");
 
-    type CategoryKeys = keyof FiltersState["category"];
-    type PriceKeys = keyof FiltersState["price"];
-    type RatingKeys = keyof FiltersState["rating"];
+    // Fetch categories from Supabase
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const { data, error } = await supabase.from("categories").select("name");
+            if (!error) {
+                setCategories(data.map((c) => c.name));
+            }
+        };
+        fetchCategories();
+    }, []);
 
-    const handleCheckboxChange = (section: keyof FiltersState, key: CategoryKeys | PriceKeys | RatingKeys) => {
-        setFilters((prevFilters) => ({
-            ...prevFilters,
-            [section]: {
-                ...prevFilters[section],
-                [key]: !(prevFilters[section] as any)[key],
-            },
-        }));
-    };
+    // Update URL query params when filters change
+    useEffect(() => {
+        const params = new URLSearchParams();
 
-    const clearFilters = () => {
-        setFilters({
-            category: {
-                medicines: false,
-                healthWellness: false,
-                personalCare: false,
-            },
-            price: {
-                under25: false,
-                _25to50: false,
-                _50to100: false,
-                over100: false,
-            },
-            rating: {
-                _5stars: false,
-                _4stars: false,
-                _3stars: false,
-                _2stars: false,
-            },
+        if (filters.category.length > 0) params.set("category", filters.category.join(","));
+        if (filters.price.length > 0) params.set("price", filters.price.join(","));
+        if (filters.rating.length > 0) params.set("rating", filters.rating.join(","));
+        params.set("sort", sort);
+
+        setSearchParams(params);
+    }, [filters, sort, setSearchParams]);
+
+    const handleCheckboxChange = (section: keyof FiltersState, value: string) => {
+        setFilters((prev) => {
+            const updatedSection = prev[section].includes(value)
+                ? prev[section].filter((v) => v !== value)
+                : [...prev[section], value];
+
+            return { ...prev, [section]: updatedSection };
         });
     };
 
+    const clearFilters = () => {
+        setFilters({ category: [], price: [], rating: [] });
+        setSort("price_asc");
+        setSearchParams(new URLSearchParams()); // Clear URL params
+    };
+
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 p-4 border rounded-lg">
+            {/* Header */}
+            <div className="flex justify-between items-center">
                 <h2 className="text-lg font-medium">Filters</h2>
                 <Button variant="outline" size="sm" onClick={clearFilters}>
-                    <Trash2/>
+                    <Trash2 />
                 </Button>
             </div>
-            <div className="flex flex-col gap-4">
-                <div>
-                    <h3 className="text-sm font-medium">Category</h3>
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
+
+            {/* Categories */}
+            <div>
+                <h3 className="text-sm font-medium">Category</h3>
+                <div className="flex flex-col gap-2">
+                    {categories.map((category) => (
+                        <div key={category} className="flex items-center gap-2">
                             <Checkbox
-                                checked={filters.category.medicines}
-                                onChange={() => handleCheckboxChange("category", "medicines")}
+                                checked={filters.category.includes(category)}
+                                onChange={() => handleCheckboxChange("category", category)}
                             />
-                            <Label>Medicines</Label>
+                            <Label>{category}</Label>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.category.healthWellness}
-                                onChange={() => handleCheckboxChange("category", "healthWellness")}
-                            />
-                            <Label>Health & Wellness</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.category.personalCare}
-                                onChange={() => handleCheckboxChange("category", "personalCare")}
-                            />
-                            <Label>Personal Care</Label>
-                        </div>
-                    </div>
+                    ))}
                 </div>
-                <div>
-                    <h3 className="text-sm font-medium">Price</h3>
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
+            </div>
+
+            {/* Price */}
+            <div>
+                <h3 className="text-sm font-medium">Price</h3>
+                <div className="flex flex-col gap-2">
+                    {["under25", "25to50", "50to100", "over100"].map((range) => (
+                        <div key={range} className="flex items-center gap-2">
                             <Checkbox
-                                checked={filters.price.under25}
-                                onChange={() => handleCheckboxChange("price", "under25")}
+                                checked={filters.price.includes(range)}
+                                onChange={() => handleCheckboxChange("price", range)}
                             />
-                            <Label>Under $25</Label>
+                            <Label>
+                                {range === "under25" && "Under $25"}
+                                {range === "25to50" && "$25 to $50"}
+                                {range === "50to100" && "$50 to $100"}
+                                {range === "over100" && "Over $100"}
+                            </Label>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.price._25to50}
-                                onChange={() => handleCheckboxChange("price", "_25to50")}
-                            />
-                            <Label>$25 to $50</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.price._50to100}
-                                onChange={() => handleCheckboxChange("price", "_50to100")}
-                            />
-                            <Label>$50 to $100</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.price.over100}
-                                onChange={() => handleCheckboxChange("price", "over100")}
-                            />
-                            <Label>Over $100</Label>
-                        </div>
-                    </div>
+                    ))}
                 </div>
-                <div>
-                    <h3 className="text-sm font-medium">Rating</h3>
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
+            </div>
+
+            {/* Rating */}
+            <div>
+                <h3 className="text-sm font-medium">Rating</h3>
+                <div className="flex flex-col gap-2">
+                    {["5", "4", "3", "2"].map((stars) => (
+                        <div key={stars} className="flex items-center gap-2">
                             <Checkbox
-                                checked={filters.rating._5stars}
-                                onChange={() => handleCheckboxChange("rating", "_5stars")}
+                                checked={filters.rating.includes(stars)}
+                                onChange={() => handleCheckboxChange("rating", stars)}
                             />
-                            <Label>⭐⭐⭐⭐⭐</Label>
+                            <Label>{"⭐".repeat(parseInt(stars))}</Label>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.rating._4stars}
-                                onChange={() => handleCheckboxChange("rating", "_4stars")}
-                            />
-                            <Label>⭐⭐⭐⭐</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.rating._3stars}
-                                onChange={() => handleCheckboxChange("rating", "_3stars")}
-                            />
-                            <Label>⭐⭐⭐</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                checked={filters.rating._2stars}
-                                onChange={() => handleCheckboxChange("rating", "_2stars")}
-                            />
-                            <Label>⭐⭐</Label>
-                        </div>
-                    </div>
+                    ))}
                 </div>
+            </div>
+
+            {/* Sorting */}
+            <div>
+                <h3 className="text-sm font-medium">Sort By</h3>
+                <Select value={sort} onValueChange={(val) => setSort(val)}>
+                    <SelectTrigger className="w-full">
+                        {SORT_OPTIONS.find((option) => option.value === sort)?.label}
+                    </SelectTrigger>
+                    <SelectContent>
+                        {SORT_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
         </div>
     );

@@ -11,9 +11,9 @@ function Home() {
   return (
     <main>
       <div className="w-full flex flex-row">
-        <Filters />
+        {/* <Filters /> */}
         <Store />
-        <Stripe/>
+        {/* <Stripe/> */}
       </div>
     </main>
   )
