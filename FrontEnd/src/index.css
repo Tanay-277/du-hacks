@@ -121,3 +121,16 @@
 		font-family: "General Sans", sans-serif;
 	}
 }
+
+@layer utilities {
+	::-webkit-scrollbar {
+		width: 3px;
+	}
+	::-webkit-scrollbar-track {
+		@apply bg-muted;
+	}
+	::-webkit-scrollbar-thumb {
+		@apply bg-accent rounded-md;
+	}
+}
+  

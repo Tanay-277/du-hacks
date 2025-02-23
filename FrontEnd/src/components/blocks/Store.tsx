@@ -114,7 +114,7 @@ const Store: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-w-dvw">
       <h1 className="text-3xl font-medium mb-6">Medicine Store</h1>
 
       {/* Filters Section */}
