@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Moon, Search, ShoppingBag, SunIcon, X, PlusCircle } from "lucide-react";
+import { Moon, Search, ShoppingBag, SunIcon, PlusCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {

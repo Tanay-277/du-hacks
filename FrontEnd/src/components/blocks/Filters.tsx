@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router";
+import { useSearchParams } from "react-router";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
@@ -21,7 +21,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function Filters() {
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [filters, setFilters] = useState<FiltersState>({
         category: searchParams.get("category")?.split(",") || [],

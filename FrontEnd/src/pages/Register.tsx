@@ -63,7 +63,7 @@ export default function Register() {
             if (error) throw error;
 
             // now insert the user details into the respective table
-            const { data, error: insertError } = await supabase
+            const { error: insertError } = await supabase
                 .from(userType)
                 .insert([{ id: user?.user?.id, email: email.trim(), name: values.name, contact_no: values.contact_no, address: values.address, state: values.state, city: values.city, area: values.area, pincode: values.pincode }]);
 
