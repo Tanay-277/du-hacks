@@ -1,4 +1,4 @@
-import { Appbar, Filters, Store } from "./components/blocks";
+import { Store } from "./components/blocks";
 import Stripe from "./components/blocks/Stripe";
 import { BrowserRouter, Route, Routes } from "react-router";
 import Register from "./pages/Register";
