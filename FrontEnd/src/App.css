@@ -1,0 +1,22 @@
+.mist-bg {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #0f172a, #1e293b);
+  }
+  
+  .mist {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0) 80%);
+    filter: blur(30px);
+    animation: mist-animation 10s infinite linear;
+  }
+  
+  @keyframes mist-animation {
+    0% { transform: translateX(-20%); }
+    100% { transform: translateX(20%); }
+  }
+  
