@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { signIn } from '../../utils/authUtil';
+import { signIn } from '@/utils/authUtil';
+import { useNavigate } from "react-router"
 
 export default function Login() {
+
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -9,7 +13,7 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const { user, error } = await signIn(email, password);
-        
+
         if (error) {
             setError(error.message);
             return;
@@ -18,13 +22,15 @@ export default function Login() {
         if (user) {
             // Handle successful login
             console.log('Logged in successfully', user);
+            navigate('/');
+
         }
     };
 
     return (
         <div>
             <h2>Login</h2>
-            {error && <p style={{color: 'red'}}>{error}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>

@@ -1,8 +1,11 @@
 import React from 'react';
-import { signUp } from '../../utils/authUtil';
-import { supaBaseClient } from '../../utils/supaBaseClient';
+import { signUp } from '@/utils/authUtil';
+import supabase  from '@/utils/supaBaseClient';
+import { useNavigate } from 'react-router';
 
 const Register: React.FC = () => {
+    const navigate = useNavigate();
+
     // State management for form inputs.
     const [emailState, setEmailState] = React.useState("");
     const [passWordState, setPassWordState] = React.useState("");
@@ -23,7 +26,7 @@ const Register: React.FC = () => {
 
         if (user) {
             // Insert user into the correct table based on type
-            const { error: insertError } = await supaBaseClient
+            const { error: insertError } = await supabase
                 .from(userType) // Insert into "vendor" or "consumer" table dynamically
                 .insert([{ 
                     id: user.id, 
@@ -37,6 +40,7 @@ const Register: React.FC = () => {
                 setEmailState("");
                 setPassWordState("");
                 setUserType("consumer");
+                navigate("/login");
             }
         }
     }

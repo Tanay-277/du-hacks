@@ -1,6 +1,6 @@
 import React from 'react';
 import { signUp } from '../../utils/authUtil';
-import { supaBaseClient } from '../../utils/supaBaseClient';
+import supabase  from '../../utils/supaBaseClient';
 
 const Register: React.FC = () => {
     // State management for form inputs.
@@ -23,7 +23,7 @@ const Register: React.FC = () => {
 
         if (user) {
             // Insert user into the correct table based on type
-            const { error: insertError } = await supaBaseClient
+            const { error: insertError } = await supabase
                 .from(userType) // Insert into "vendor" or "consumer" table dynamically
                 .insert([{ 
                     id: user.id, 
