@@ -1,74 +1,66 @@
 import express from 'express';
 import cors from 'cors';
-import Stripe from 'stripe'; 
+import Stripe from 'stripe';
 import dotenv from 'dotenv';
 
-dotenv.config(); 
+dotenv.config();
 
 const app = express();
-
-app.use(cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-}));
-
+app.use(cors({ origin: "http://localhost:5173", methods: ["GET", "POST"] }));
 app.use(express.json());
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Sample medicines data
 const medicines = [
-    { id: 1, name: "Paracetamol", price: 50, description: "Pain reliever and a fever reducer." },
-    { id: 2, name: "Ibuprofen", price: 75, description: "Nonsteroidal anti-inflammatory drug." },
-    { id: 3, name: "Amoxicillin", price: 150, description: "Antibiotic used to treat bacterial infections." },
+    { id: 1, name: "Paracetamol", price: 50 },
+    { id: 2, name: "Ibuprofen", price: 75 },
+    { id: 3, name: "Amoxicillin", price: 150 }
 ];
 
-app.get('/', (req, res) => {
-    res.send("Medico");
-});
-
-// Endpoint to get all medicines
-app.get('/medicines', (req, res) => {
-    res.json(medicines);
-});
-
-// Payment endpoint
 app.post('/payment', async (req, res) => {
-    const { medicineId, email } = req.body;
+    const { medicineIds, email } = req.body;
 
-    // Find the selected medicine
-    const medicine = medicines.find(med => med.id === medicineId);
-    if (!medicine) {
-        return res.status(404).json({ error: 'Medicine not found' });
+    if (!Array.isArray(medicineIds) || medicineIds.length === 0) {
+        return res.status(400).json({ error: "Invalid medicine selection" });
     }
 
-    try {
-        // Create a product in Stripe for the selected medicine
-        const product = await stripe.products.create({
-            name: medicine.name,
-            description: medicine.description,
-        });
+    // Get selected medicines
+    const selectedMedicines = medicines.filter(med => medicineIds.includes(med.id));
 
-        // Create a price for the product
-        const price = await stripe.prices.create({
-            product: product.id,
-            unit_amount: medicine.price * 100, // Convert INR to paise
+    if (selectedMedicines.length === 0) {
+        return res.status(404).json({ error: "Medicines not found" });
+    }
+
+    // Create line items for Stripe
+    const lineItems = selectedMedicines.map(med => ({
+        price_data: {
             currency: 'inr',
-        });
+            product_data: { name: med.name },
+            unit_amount: med.price * 100, // Convert to paise
+        },
+        quantity: 1
+    }));
 
-        // Create a checkout session
+    // Generate invoice HTML (this can be improved)
+    const invoiceHTML = `
+        <h2>Invoice</h2>
+        <p>Customer: ${email || 'Guest'}</p>
+        <table border="1">
+            <tr><th>Medicine</th><th>Price</th></tr>
+            ${selectedMedicines.map(med => `<tr><td>${med.name}</td><td>₹${med.price}</td></tr>`).join('')}
+        </table>
+        <h3>Total: ₹${selectedMedicines.reduce((sum, med) => sum + med.price, 0)}</h3>
+    `;
+
+    try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: [
-                {
-                    price: price.id,
-                    quantity: 1,
-                }
-            ],
+            line_items: lineItems,
             mode: 'payment',
             success_url: 'http://localhost:3000/success',
             cancel_url: 'http://localhost:3000/cancel',
-            customer_email: email || 'demo@gmail.com', // Optional email field
+            metadata: { invoice: invoiceHTML }, // Store invoice in Stripe metadata
+            customer_email: email || 'demo@gmail.com',
         });
 
         res.json({ url: session.url });
@@ -78,8 +70,12 @@ app.post('/payment', async (req, res) => {
     }
 });
 
-// Start the server
+app.get('/success' , (req, res)=> {
+    res.redirect("http://localhost:5173")
+})
+
+app.get('/cancel' , (req, res)=> {
+    res.redirect("http://localhost:5173")
+})
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
