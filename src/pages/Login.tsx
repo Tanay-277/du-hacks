@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { signIn } from '../../utils/authUtil';
+import { signIn } from '@/utils/authUtil';
 
-export default function Login() {
+const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -52,5 +52,7 @@ export default function Login() {
             </form>
         </div>
     );
-}
+};
+
+export default Login;
 

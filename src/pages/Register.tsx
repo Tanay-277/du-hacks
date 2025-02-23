@@ -1,6 +1,6 @@
 import React from 'react';
-import { signUp } from '../../utils/authUtil';
-import { supaBaseClient } from '../../utils/supaBaseClient';
+import { supaBaseClient } from '@/utils/supaBaseClient';
+import { signUp } from '@/utils/authUtil';
 
 const Register: React.FC = () => {
     // State management for form inputs.

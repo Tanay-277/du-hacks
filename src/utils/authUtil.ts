@@ -1,27 +1,13 @@
 import { supaBaseClient } from './supaBaseClient';
 import { AuthError, User, Session } from '@supabase/supabase-js';
 
-export async function signUp(email: string, password: string, userType: 'vendor' | 'consumer'): Promise<{ user: User | null; session: Session | null; error: AuthError | null }> {
-    try {
-        const { data: { user, session }, error } = await supaBaseClient.auth.signUp({
-            email,
-            password,
-        });
-        if (user) {
-            const table = userType === 'vendor' ? 'vendor' : 'consumer';
+export async function signUp(email: string, password: string, userType: 'vendor' | 'consumer') {
+  const { user, error } = await supaBaseClient.auth.signUp({
+    email,
+    password,
+  });
 
-            const { error: insertError } = await supaBaseClient
-                .from(table)
-                .insert([{ id: user.id, email: user.email, created_at: new Date().toISOString() }]);
-
-            if (insertError) throw insertError;
-        }
-        
-        return { user, session, error };
-    } catch (error) {
-        console.error('Error signing up:', error);
-        return { user: null, session: null, error: error as AuthError };
-    }
+  return { user, error };
 }
 
 export async function signIn(email: string, password: string): Promise<{ user: User | null; session: Session | null; error: AuthError | null }> {
