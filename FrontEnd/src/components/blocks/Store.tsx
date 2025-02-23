@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import Skeleton from "../ui/skeleton";
-import { useSearchParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
 import supabase from "@/utils/supaBaseClient";
 import { getProducts } from "@/utils/products";
 
@@ -113,6 +113,32 @@ const Store: React.FC = () => {
     setFilteredProducts(products);
   };
 
+  const addToCart = (product: Product) => {
+    try {
+        if (!product || !product.id) {
+            console.error("Invalid product:", product);
+            alert("Invalid product data!");
+            return;
+        }
+
+        let cart: Product[] = JSON.parse(localStorage.getItem("cart") || "[]");
+
+        // Check if the product already exists in the cart
+        if (cart.some(item => item.id === product.id)) {
+            alert(`${product.name} is already in the cart!`);
+            return;
+        }
+
+        cart.push(product);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        alert(`${product.name} added to cart!`);
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        alert("Something went wrong while adding to the cart.");
+    }
+};
+
+
   return (
     <div className="p-6 min-w-dvw">
       <h1 className="text-3xl font-medium mb-6">Medicine Store</h1>
@@ -201,7 +227,7 @@ const Store: React.FC = () => {
                   <p className="text-gray-600">₹{product.price}</p>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline">Add to Cart</Button>
+                  <Button variant="outline" onClick={() => addToCart(product)}>Add to Cart</Button>
                 </CardFooter>
               </Card>
             ))}

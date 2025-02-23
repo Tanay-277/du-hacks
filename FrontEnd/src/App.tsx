@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import { AuthProvider } from "./utils/AuthContext";
 import HomeLayout from "./layouts/HomeLayout";
 import CreateProduct from "./pages/CreateProduct";
+import SuccessPage from "./pages/SuccessPage";
 
 function Home() {
   return (
@@ -13,8 +14,9 @@ function Home() {
       <div className="w-full flex flex-row">
         {/* <Filters /> */}
         <Store />
-        {/* <Stripe/> */}
       </div>
+      <Stripe/>
+
     </main>
   )
 }
@@ -27,6 +29,7 @@ export function Routing() {
       <Route element={<HomeLayout />} >
         <Route path="/" element={<Home />} />
         <Route path="/newProduct" element={<CreateProduct />} />
+        <Route path="/success" element={<SuccessPage />} />
       </Route>
     </Routes>
   )
